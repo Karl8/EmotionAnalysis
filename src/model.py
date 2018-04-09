@@ -25,12 +25,14 @@ class transfer_model(object):
             self.train_set = DataSet("../dataset/BLSD/img", self.batch_size, self.label_dim)
             self.log_dir = log_dir + "/BLSD"
             self.checkpoint_dir = checkpoint_dir + "/BLSD"
+            self.predict_set = DataSet("../predictset/BLSD", 1, self.label_dim)
             #self.pred_set = DataSet("../BLSD_predset/img", self.batch_size)
         elif dataset_name == 'kaggle':
             self.label_dim = 7
             self.train_set = DataSet("../dataset/kaggle", self.batch_size, self.label_dim)
             self.log_dir = log_dir + "/kaggle"
             self.checkpoint_dir = checkpoint_dir + "/kaggle"
+            self.predict_set = DataSet("../predictset/kaggle", 1, self.label_dim)
 
         # parameters
         self.input_height = 224
@@ -44,8 +46,7 @@ class transfer_model(object):
         
         # get number of batches for a single epoch
         self.num_batches = self.train_set.total_batches
-        # self.pred_set =
-        # self.pred_num_batches =  
+        self.predict_num_batches = self.predict_set.total_batches
 
     def classifier(self, x, is_training=True, reuse=False):
         # Arichitecture : VGG16(CONV7x7x512_P-FC4096_BR-FC4097_BR-FC[label_dim]-softmax)
@@ -148,9 +149,8 @@ class transfer_model(object):
 
         # save model for final step
         self.save(self.checkpoint_dir, counter)
-    '''
+    
     def pred(self):
-        predict_set = DataSet("../dataset/img", 1)
         label_name = ["amusement", "anger", "awe", "contentment", "disgust", "excitement", "fear", "sadness"]
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
         if could_load:
@@ -158,10 +158,10 @@ class transfer_model(object):
         else:
             print(" [!] Load failed...")
         for idx in range(0, self.pred_num_batches):
-            inputs, labels = self.pred_set.next_batch()
+            inputs, labels = self.predict_set.next_batch()
             prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
             print label_name[np.argmax(results)]
-    '''
+    
         
     @property
     def model_dir(self):
