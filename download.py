@@ -24,7 +24,10 @@ def file_name(file_dir):
                 imgurl = line[1]
                 download_name = "./dataset/" + f_name[0] + "/" + str(cnt) + "_" + line[2] + "_" + line[3].strip() + ".jpg"
                 print download_name
-                urllib.urlretrieve(imgurl, download_name)
+                try:
+                    urllib.urlretrieve(imgurl, download_name)
+                except:
+                    print "downloading img error"
         return
         print "fuck!!"
         #f = open()
