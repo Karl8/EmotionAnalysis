@@ -26,6 +26,7 @@ class transfer_model(object):
             self.log_dir = log_dir + "/BLSD"
             self.checkpoint_dir = checkpoint_dir + "/BLSD"
             self.predict_set = DataSet("../predictset/BLSD", 1, self.label_dim)
+            self.label_name = ["amusement", "anger", "awe", "contentment", "disgust", "excitement", "fear", "sadness"]
             #self.pred_set = DataSet("../BLSD_predset/img", self.batch_size)
         elif dataset_name == 'kaggle':
             self.label_dim = 7
@@ -33,6 +34,7 @@ class transfer_model(object):
             self.log_dir = log_dir + "/kaggle"
             self.checkpoint_dir = checkpoint_dir + "/kaggle"
             self.predict_set = DataSet("../predictset/kaggle", 1, self.label_dim)
+            self.label_name = ["anger", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
 
         # parameters
         self.input_height = 224
@@ -154,8 +156,7 @@ class transfer_model(object):
 
         # saver to save model
         self.saver = tf.train.Saver()
-        
-        label_name = ["amusement", "anger", "awe", "contentment", "disgust", "excitement", "fear", "sadness"]
+                
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
         if could_load:
             print(" [*] Load SUCCESS")
@@ -164,7 +165,7 @@ class transfer_model(object):
         for idx in range(0, self.predict_num_batches):
             inputs, labels = self.predict_set.next_batch()
             prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
-            print label_name[np.argmax(prob)]
+            print self.label_name[np.argmax(prob)]
     
         
     @property
