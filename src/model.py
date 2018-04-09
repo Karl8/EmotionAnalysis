@@ -41,6 +41,7 @@ class transfer_model(object):
     def classifier(self, x, is_training=True, reuse=False):
         # Arichitecture : VGG16(CONV7x7x512_P-FC4096_BR-FC4097_BR-FC[label_dim]-softmax)
         with tf.variable_scope("classifier", reuse=reuse):
+            net = tf.reshape(net, [self.batch_size, -1])
             net = tf.nn.relu(bn(linear(x, 4096, scope='fc1'), is_training=is_training, scope='bn1'))
             net = tf.nn.relu(bn(linear(x, 4096, scope='fc2'), is_training=is_training, scope='bn2'))
             out = linear(x, self.label_dim, scope='fc3')
