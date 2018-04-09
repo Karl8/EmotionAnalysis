@@ -7,6 +7,7 @@ import numpy as np
 import vgg16
 from ops import *
 from utils import *
+from dataset import Dataset
 
 class transfer_model(object):
     model_name = "transfer_model"     # name for checkpoint
@@ -34,8 +35,8 @@ class transfer_model(object):
         self.learning_rate = learning_rate
         
         # get number of batches for a single epoch
-        #self.num_batches = len(self.data_X) // self.batch_size ?????
-        self.num_batches = 0
+        self.train_set = DataSet("../data/img", self.batch_size, False)
+        self.num_batches = self.train_set.total_batches
 
     def classifier(self, x, is_training=True, reuse=False):
         # Arichitecture : VGG16(CONV7x7x512_P-FC4096_BR-FC4097_BR-FC[label_dim]-softmax)
@@ -81,7 +82,7 @@ class transfer_model(object):
         self.test_prob = tf.nn.softmax(test_logits)
 
         """ Summary """
-        self.sum = tf.summary.scalar("d_loss_real", d_loss_real)
+        self.sum = tf.summary.scalar("loss", self.loss)
 
     def train(self):
 
@@ -114,28 +115,17 @@ class transfer_model(object):
             # get batch data
             for idx in range(start_batch_id, self.num_batches):
                 ''' TODO: add data'''
-                batch_images = self.data_X[idx*self.batch_size:(idx+1)*self.batch_size]
-                batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
+                inputs, labels = self.train_set.next_batch()
 
                 # update network
                 _, summary_str, loss = self.sess.run([self.optim, self.sum, self.loss],
-                                               feed_dict={self.inputs: batch_images, self.z: batch_z})
+                                               feed_dict={self.inputs: inputs, self.labels: labels})
                 self.writer.add_summary(summary_str, counter)
 
                 # display training status
                 counter += 1
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f" \
                       % (epoch, idx, self.num_batches, time.time() - start_time, loss))
-
-                # # save training results for every 300 steps
-                # if np.mod(counter, 300) == 0:
-                #     samples = self.sess.run(self.fake_images, feed_dict={self.z: self.sample_z})
-                #     tot_num_samples = min(self.sample_num, self.batch_size)
-                #     manifold_h = int(np.floor(np.sqrt(tot_num_samples)))
-                #     manifold_w = int(np.floor(np.sqrt(tot_num_samples)))
-                #     save_images(samples[:manifold_h * manifold_w, :, :, :], [manifold_h, manifold_w],
-                #                 './' + check_folder(self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_train_{:02d}_{:04d}.png'.format(
-                #                     epoch, idx))
 
             # After an epoch, start_batch_id is set to zero
             # non-zero value is only for the first epoch after loading pre-trained model
