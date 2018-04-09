@@ -4,7 +4,7 @@ import cv2
 import random
 
 class DataSet(object):
-    def __init__(self, data_dir, batch_size, max_size=-1):
+    def __init__(self, data_dir, batch_size, label_dim, max_size=-1):
         self.DATA_SIZE = 224
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -12,6 +12,7 @@ class DataSet(object):
         self.gen_image_list()
         self.shuffle_data()
         self.cur_index = 0
+        self.label_dim = label_dim
 
     def gen_image_list(self):
         self.image_list = []
@@ -28,7 +29,7 @@ class DataSet(object):
         self.total_images = (self.total_images // self.batch_size) * self.batch_size
 
         self.total_batches = (self.max_size // self.batch_size) if self.max_size > 0 else (self.total_images // self.batch_size)
-        self.total_batches -= 10
+        #self.total_batches -= 10
 
     def read_image(self, image_name):
         image_path = os.path.join(self.data_dir, image_name)
@@ -52,7 +53,7 @@ class DataSet(object):
             # print(self.image_list[i])
             original_img, label_img = self.read_image(self.image_list[i])
             array_original_img.append(original_img)
-            label = np.zeros([8])
+            label = np.zeros([self.label_dim])
             label[int(label_img) - 1] = 1
             array_label.append(label)
 

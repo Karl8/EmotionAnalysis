@@ -12,7 +12,7 @@ from dataset import DataSet
 class transfer_model(object):
     model_name = "transfer_model"     # name for checkpoint
 
-    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, learning_rate = 0.00001, beta1=0.5):
+    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, log_dir, learning_rate = 0.00001, beta1=0.5):
         self.sess = sess
         self.dataset_name = dataset_name
         self.result_dir = result_dir
@@ -22,13 +22,13 @@ class transfer_model(object):
         self.beta1 = beta1
         if dataset_name == 'BLSD':
             self.label_dim = 8
-            self.train_set = DataSet("../dataset/BLSD/img", self.batch_size)
+            self.train_set = DataSet("../dataset/BLSD/img", self.batch_size, self.label_dim)
             self.log_dir = log_dir + "/BLSD"
             self.checkpoint_dir = checkpoint_dir + "/BLSD"
             #self.pred_set = DataSet("../BLSD_predset/img", self.batch_size)
         elif dataset_name == 'kaggle':
             self.label_dim = 7
-            self.train_set = DataSet("../dataset/kaggle", self.batch_size)
+            self.train_set = DataSet("../dataset/kaggle", self.batch_size, self.label_dim)
             self.log_dir = log_dir + "/kaggle"
             self.checkpoint_dir = checkpoint_dir + "/kaggle"
 
