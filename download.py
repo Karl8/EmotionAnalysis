@@ -13,12 +13,16 @@ def file_name(file_dir):
                 continue
             print "file_name:", ff
             f = open("./dataset/" + ff, "r")
+            try:
+                os.mkdir("./dataset/" + f_name[0].split("_")[0])
+            except:
+                print "dir exist"
             cnt = 0
             for lines in f.readlines():
                 cnt += 1
                 line = lines.split(",");
                 imgurl = line[1]
-                download_name = "./downloads/" + line[0] + "/" + str(cnt) + "_" + line[2] + "_" + line[3].strip() + ".jpg"
+                download_name = "./dataset/" + line[0] + "/" + str(cnt) + "_" + line[2] + "_" + line[3].strip() + ".jpg"
                 print download_name
                 urllib.urlretrieve(imgurl, download_name)
         return
