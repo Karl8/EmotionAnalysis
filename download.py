@@ -40,8 +40,10 @@ def file_name(file_dir):
                 os.mkdir("./dataset/" + "img")
             except:
                 print "dir exist"
+            haha = 0
 
             for lines in f.readlines():
+                haha += 1
                 line = lines.split(",");
                 if (int(line[2]) != 1 and int(line[2]) != 0):
                     continue
@@ -53,7 +55,7 @@ def file_name(file_dir):
                     print "file_exist"
                     continue
                 try:
-                    print "downloading file"
+                    print "downloading file", haha, "of", f_name[0]
                     urllib.urlretrieve(imgurl, download_name)
                 except:
                     print "downloading img error"
