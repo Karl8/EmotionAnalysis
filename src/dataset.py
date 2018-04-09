@@ -25,8 +25,10 @@ class DataSet(object):
                 self.total_images += 1
                 if (self.max_size > 0 and self.total_images >= self.max_size):
                     break
+        self.total_images = (self.total_images // self.batch_size) * self.batch_size
 
         self.total_batches = (self.max_size // self.batch_size) if self.max_size > 0 else (self.total_images // self.batch_size)
+        self.total_batches -= 10
 
     def read_image(self, image_name):
         image_path = os.path.join(self.data_dir, image_name)
