@@ -60,13 +60,14 @@ def main():
                 dataset_name=args.dataset,
                 checkpoint_dir=args.checkpoint_dir,
                 result_dir=args.result_dir,
-                log_dir=args.log_dir)
+                log_dir=args.log_dir,
+                model_name=args.model_name)
 
         # build graph
         model.build_model()
 
         # show network architecture
-        # show_all_variables()
+        show_all_variables()
 
         # launch the graph in a session
         if (args.predict):

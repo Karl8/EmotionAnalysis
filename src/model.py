@@ -12,17 +12,25 @@ from dataset import DataSet
 class transfer_model(object):
     model_name = "transfer_model"     # name for checkpoint
 
-    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, log_dir, learning_rate = 0.0002, beta1=0.5):
+    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, learning_rate = 0.0002, beta1=0.5):
         self.sess = sess
         self.dataset_name = dataset_name
-        self.checkpoint_dir = checkpoint_dir
         self.result_dir = result_dir
         self.log_dir = log_dir
         self.epoch = epoch
         self.batch_size = batch_size
         self.beta1 = beta1
-        # if dataset_name == 'BLSD':
-        self.label_dim = 8
+        if dataset_name == 'BLSD':
+            self.label_dim = 8
+            self.train_set = DataSet("../dataset/BLSD/img", self.batch_size)
+            self.log_dir = log_dir + "/BLSD"
+            self.checkpoint_dir = checkpoint_dir + "/BLSD"
+            #self.pred_set = DataSet("../BLSD_predset/img", self.batch_size)
+        elif dataset_name == 'kaggle':
+            self.label_dim = 7
+            self.train_set = DataSet("../dataset/kaggle", self.batch_size)
+            self.log_dir = log_dir + "/kaggle"
+            self.checkpoint_dir = checkpoint_dir + "/kaggle"
 
         # parameters
         self.input_height = 224
@@ -35,15 +43,14 @@ class transfer_model(object):
         self.learning_rate = learning_rate
         
         # get number of batches for a single epoch
-        self.train_set = DataSet("../dataset/img", self.batch_size, False)
         self.num_batches = self.train_set.total_batches
+        # self.pred_set =
+        # self.pred_num_batches =  
 
     def classifier(self, x, is_training=True, reuse=False):
         # Arichitecture : VGG16(CONV7x7x512_P-FC4096_BR-FC4097_BR-FC[label_dim]-softmax)
         with tf.variable_scope("classifier", reuse=reuse):
             net = tf.reshape(x, [self.batch_size, -1])
-            print "net shape", net.shape
-            print "x shape", x.shape
             net = tf.nn.relu(bn(linear(net, 4096, scope='fc1'), is_training=is_training, scope='bn1'))
             net = tf.nn.relu(bn(linear(net, 4096, scope='fc2'), is_training=is_training, scope='bn2'))
             out = linear(net, self.label_dim, scope='fc3')
@@ -80,7 +87,7 @@ class transfer_model(object):
         self.optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
                       .minimize(self.loss, var_list=vars)
 
-        """" Testing """
+        """ Testing """
         # for test
         test_logits = self.classifier(vgg.pool5, is_training=False, reuse=True)
         self.test_prob = tf.nn.softmax(test_logits)
@@ -141,7 +148,21 @@ class transfer_model(object):
 
         # save model for final step
         self.save(self.checkpoint_dir, counter)
-
+    '''
+    def pred(self):
+        predict_set = DataSet("../dataset/img", 1)
+        label_name = ["amusement", "anger", "awe", "contentment", "disgust", "excitement", "fear", "sadness"]
+        could_load, checkpoint_counter = self.load(self.checkpoint_dir)
+        if could_load:
+            print(" [*] Load SUCCESS")
+        else:
+            print(" [!] Load failed...")
+        for idx in range(0, self.pred_num_batches):
+            inputs, labels = self.pred_set.next_batch()
+            prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
+            print label_name[np.argmax(results)]
+    '''
+        
     @property
     def model_dir(self):
         return "{}_{}_{}".format(
