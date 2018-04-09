@@ -66,7 +66,7 @@ def main():
         model.build_model()
 
         # show network architecture
-        show_all_variables()
+        # show_all_variables()
 
         # launch the graph in a session
         if (args.predict):
