@@ -12,7 +12,7 @@ from dataset import DataSet
 class transfer_model(object):
     model_name = "transfer_model"     # name for checkpoint
 
-    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, learning_rate = 0.0002, beta1=0.5):
+    def __init__(self, sess, epoch, batch_size, dataset_name, checkpoint_dir, result_dir, learning_rate = 0.00001, beta1=0.5):
         self.sess = sess
         self.dataset_name = dataset_name
         self.result_dir = result_dir
@@ -84,7 +84,7 @@ class transfer_model(object):
         vars = tf.trainable_variables()
 
         # optimizer
-        self.optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
+        self.optim = tf.train.GradientDescentOptimizer(self.learning_rate) \
                       .minimize(self.loss, var_list=vars)
 
         """ Testing """
