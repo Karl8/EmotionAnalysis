@@ -30,7 +30,8 @@ class transfer_model(object):
             #self.pred_set = DataSet("../BLSD_predset/img", self.batch_size)
         elif dataset_name == 'kaggle':
             self.label_dim = 7
-            self.train_set = DataSet("../dataset/kaggle", self.batch_size, self.label_dim)
+            self.train_set = DataSet("../dataset/kaggle/training", self.batch_size, self.label_dim)
+            self.test_set = DataSet("../dataset/kaggle/test", 1, self.label_dim)
             self.log_dir = log_dir + "/kaggle"
             self.checkpoint_dir = checkpoint_dir + "/kaggle"
             self.predict_set = DataSet("../predictset/kaggle", 1, self.label_dim)
@@ -48,6 +49,7 @@ class transfer_model(object):
         
         # get number of batches for a single epoch
         self.num_batches = self.train_set.total_batches
+        self.test_num_batches = self.test_set.total_batches
         self.predict_num_batches = self.predict_set.total_batches
 
     def classifier(self, x, is_training=True, reuse=False):
@@ -94,9 +96,11 @@ class transfer_model(object):
         # for test
         test_logits = self.classifier(vgg.pool5, is_training=False, reuse=True)
         self.test_prob = tf.nn.softmax(test_logits)
+        #self.acc = tf.equal(tf.argmax(self.test_prob), tf.argmax(self.labels))
 
         """ Summary """
-        self.sum = tf.summary.scalar("loss", self.loss)
+        self.loss_sum = tf.summary.scalar("loss", self.loss)
+        #self.acc_sum = tf.summary.scalar("acc", self.acc)
 
     def train(self):
 
@@ -138,7 +142,8 @@ class transfer_model(object):
 
                 # display training status
                 counter += 1
-                print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f" \
+                if counter % 100 == 1:
+                    print("Epoch: [%2d] [%4d/%4d] time: %4.4f, loss: %.8f" \
                       % (epoch, idx, self.num_batches, time.time() - start_time, loss))
 
             # After an epoch, start_batch_id is set to zero
@@ -147,6 +152,17 @@ class transfer_model(object):
 
             # save model
             self.save(self.checkpoint_dir, counter)
+
+            '''Test'''
+            acc = 0
+            for idx in range(0, self.test_num_batches):
+                inputs, labels = self.test_set.next_batch()
+                prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
+                if np.argmax(prob) == np.argmax(labels):
+                    acc += 1
+            print("Epoch: [%2d] acc: %.8f" \
+                      % (epoch, (acc + 0.0) / self.test_num_batches))
+
 
 
         # save model for final step
