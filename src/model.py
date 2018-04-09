@@ -51,7 +51,7 @@ class transfer_model(object):
     def classifier(self, x, is_training=True, reuse=False):
         # Arichitecture : VGG16(CONV7x7x512_P-FC4096_BR-FC4097_BR-FC[label_dim]-softmax)
         with tf.variable_scope("classifier", reuse=reuse):
-            net = tf.reshape(x, [self.batch_size, -1])
+            net = tf.reshape(x, [-1, 7*7*512])
             net = tf.nn.relu(bn(linear(net, 4096, scope='fc1'), is_training=is_training, scope='bn1'))
             net = tf.nn.relu(bn(linear(net, 4096, scope='fc2'), is_training=is_training, scope='bn2'))
             out = linear(net, self.label_dim, scope='fc3')
@@ -64,10 +64,10 @@ class transfer_model(object):
 
         """ Graph Input """
         # images
-        self.inputs = tf.placeholder(tf.float32, [bs] + image_dims, name='input_images')
+        self.inputs = tf.placeholder(tf.float32, [None] + image_dims, name='input_images')
 
         # labels
-        self.labels = tf.placeholder(tf.float32, [bs, self.label_dim], name='label')
+        self.labels = tf.placeholder(tf.float32, [None, self.label_dim], name='label')
 
         """ Loss Function """
 
@@ -151,16 +151,20 @@ class transfer_model(object):
         self.save(self.checkpoint_dir, counter)
     
     def pred(self):
+
+        # saver to save model
+        self.saver = tf.train.Saver()
+        
         label_name = ["amusement", "anger", "awe", "contentment", "disgust", "excitement", "fear", "sadness"]
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
         if could_load:
             print(" [*] Load SUCCESS")
         else:
             print(" [!] Load failed...")
-        for idx in range(0, self.pred_num_batches):
+        for idx in range(0, self.predict_num_batches):
             inputs, labels = self.predict_set.next_batch()
             prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
-            print label_name[np.argmax(results)]
+            print label_name[np.argmax(prob)]
     
         
     @property

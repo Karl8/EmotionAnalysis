@@ -70,7 +70,7 @@ def main():
 
         # launch the graph in a session
         if (args.predict):
-            #model.pred()
+            model.pred()
             print(" [*] Prediction finished!")
         else:
             model.train()
