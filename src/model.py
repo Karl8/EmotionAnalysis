@@ -96,11 +96,11 @@ class transfer_model(object):
         # for test
         test_logits = self.classifier(vgg.pool5, is_training=False, reuse=True)
         self.test_prob = tf.nn.softmax(test_logits)
-        #self.acc = tf.equal(tf.argmax(self.test_prob), tf.argmax(self.labels))
+        self.acc = tf.equal(tf.argmax(self.test_prob), tf.argmax(self.labels))
 
         """ Summary """
         self.loss_sum = tf.summary.scalar("loss", self.loss)
-        #self.acc_sum = tf.summary.scalar("acc", self.acc)
+        self.acc_sum = tf.summary.scalar("acc", self.acc)
 
     def train(self):
 
@@ -136,9 +136,10 @@ class transfer_model(object):
                 inputs, labels = self.train_set.next_batch()
 
                 # update network
-                _, summary_str, loss = self.sess.run([self.optim, self.sum, self.loss],
+                _, loss_summary_str, acc_summary_str, loss = self.sess.run([self.optim, self.loss_sum, self.acc_sum, self.loss],
                                                feed_dict={self.inputs: inputs, self.labels: labels})
-                self.writer.add_summary(summary_str, counter)
+                self.writer.add_summary(loss_summary_str, counter)
+                self.writer.add_summary(acc_summary_str, counter)
 
                 # display training status
                 counter += 1
