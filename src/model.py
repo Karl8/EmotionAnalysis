@@ -89,14 +89,17 @@ class transfer_model(object):
         vars = tf.trainable_variables()
 
         # optimizer
-        self.optim = tf.train.GradientDescentOptimizer(self.learning_rate) \
-                      .minimize(self.loss, var_list=vars)
-
+        # self.optim = tf.train.GradientDescentOptimizer(self.learning_rate) \
+        #              .minimize(self.loss, var_list=vars)
+        self.optim = tf.train.AdamOptimizer(self.learning_rate) \
+                                      .minimize(self.loss, var_list=vars)
         """ Testing """
         # for test
         test_logits = self.classifier(vgg.pool5, is_training=False, reuse=True)
         self.test_prob = tf.nn.softmax(test_logits)
-        self.acc = tf.equal(tf.argmax(self.test_prob), tf.argmax(self.labels))
+        
+        correct_pred = tf.equal(tf.argmax(self.test_prob), tf.argmax(self.labels))
+        self.acc = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
         """ Summary """
         self.loss_sum = tf.summary.scalar("loss", self.loss)
@@ -182,8 +185,10 @@ class transfer_model(object):
         for idx in range(0, self.predict_num_batches):
             inputs, labels = self.predict_set.next_batch()
             prob = self.sess.run([self.test_prob], feed_dict={self.inputs: inputs})
-            print self.label_name[np.argmax(prob)]
-    
+            print prob
+            print labels
+            print self.label_name[np.argmax(prob)], self.label_name[np.argmax(labels)]
+            print "============" 
         
     @property
     def model_dir(self):

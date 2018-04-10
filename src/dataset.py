@@ -34,6 +34,10 @@ class DataSet(object):
     def read_image(self, image_name):
         image_path = os.path.join(self.data_dir, image_name)
         img_data = cv2.imread(image_path)
+#        img_data = cv2.cvtColor(img_data, cv2.COLOR_BGR2GRAY)
+
+#        cv2.imwrite(image_path, img_data)
+#        img_data = cv2.imread(image_path)
         height, weight, channels = img_data.shape
 
         #original_img = cv2.resize(img_data, (self.DATA_SIZE, self.DATA_SIZE))
@@ -50,7 +54,7 @@ class DataSet(object):
         array_original_img = []
         array_label = []
         for i in range(self.cur_index, self.end_index):
-            # print(self.image_list[i])
+#            print(self.image_list[i])
             original_img, label_img = self.read_image(self.image_list[i])
             array_original_img.append(original_img)
             label = np.zeros([self.label_dim])
